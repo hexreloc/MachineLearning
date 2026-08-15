@@ -1,3 +1,2 @@
-flake.lock
-$out/
-MLC-notes/
+uv.lock
+.python-version
