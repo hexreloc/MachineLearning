@@ -1,51 +1,55 @@
 import numpy as np
 from numpy import ndarray
 
+
 class LinearModel:
     def __init__(self):
-        self.iterations = 0
-        self.x  = []
-        self.y  = []
-        self.L = 0.001
-        self.w = 0
-        self.b = 0
-        self.m = 0
+        self.iterations = 1000
+        self.L = 0.01
 
-    def fit(self, x_train:ndarray, y_train:ndarray,iterations=1000):
-        self.x = x_train
-        self.y = y_train
+        self.w = 0.0
+        self.b = 0.0
+
+        self.x_mean = 0.0
+        self.x_std = 1.0
+
+    # normalization of data
+    def fit(self, x_train: ndarray, y_train: ndarray, iterations=10000):
+        x_train = np.asarray(x_train, dtype=float).flatten()
+        y_train = np.asarray(y_train, dtype=float).flatten()
+
         self.iterations = iterations
 
+        self.x_mean = np.mean(x_train)
+        self.x_std = np.std(x_train)
+
+        x = (x_train - self.x_mean) / self.x_std
+
+        self.x = x
+        self.y = y_train
+
+        self.train()
+
+        # Convert parameters back to original x scale
+        self.w = self.w / self.x_std
+        self.b = self.b - self.w * self.x_mean
+
     def gradient_descent(self):
-        w_now = self.w
-        b_now = self.b
         m = len(self.x)
-        sum_w = 0
-        sum_b = 0
-        for i in range(m):
-            sum_w += (self.x[i])*(self.y[i] - w_now*self.x[i] - b_now)
-            sum_b += (self.y[i] - w_now*self.x[i] - b_now)
-        w_gradient = -(1/m)*sum_w 
-        b_gradient = -(1/m)*sum_b
-        self.w = w_now - self.L*w_gradient
-        self.b = b_now - self.L*b_gradient
-        return self.w, self.b
 
-    def train(self, w =0, b=0):
-        for i in range(self.iterations):
-            w,b = self.gradient_descent()
-        self.w = w
-        self.b = b
-    
-    def predict(self,x):
-        y = self.w * x + self.b
-        return y
+        prediction = self.w * self.x + self.b
+        error = prediction - self.y
 
+        w_gradient = (2 / m) * np.sum(self.x * error)
+        b_gradient = (2 / m) * np.sum(error)
 
-model = LinearModel()
-x_train = np.array([1.0, 2.0])   
-y_train = np.array([300.0, 500.0])
-model.fit(x_train, y_train, iterations=10000)
-model.train()
-print(model.predict(2))
+        self.w -= self.L * w_gradient
+        self.b -= self.L * b_gradient
 
+    def train(self):
+        for _ in range(self.iterations):
+            self.gradient_descent()
+
+    def predict(self, x):
+        x = np.asarray(x, dtype=float)
+        return self.w * x + self.b
