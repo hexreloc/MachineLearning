@@ -84,7 +84,8 @@ def calculate_accuracy(y, y_hat):
 
 ## Real data
 from sklearn.datasets import load_breast_cancer
-import pandas
+import pandas as pd
+
 data = load_breast_cancer(return_X_y = True)
 X, y = data
 m = y.shape[0]
@@ -101,5 +102,4 @@ y_test_hat = predict(X_test, theta)
 
 calculate_accuracy(y_train, y_train_hat)
 calculate_accuracy(y_test, y_test_hat)
-
 
